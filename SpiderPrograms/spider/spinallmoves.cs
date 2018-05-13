@@ -130,7 +130,7 @@ namespace spider
 
                 if (WriteOnce)
                 {
-                    cSC.Deck.SaveBoardAsBin(ref tb, "SUIT_" + NumSuitsWritten.ToString() + strJustCompleted);
+                    cSC.Deck.SaveBoardAsBin(ref tb, "SUIT_" + NumSuitsWritten.ToString() + strJustCompleted + "_");
                 }
 
             }
@@ -906,6 +906,13 @@ namespace spider
 
                 LastCount = cSC.ThisBoardSeries.Count;
                 bCanSpinMore = SpinOff(ref tb);
+                if (GlobalClass.bFoundFirstColunn)
+                {
+                    GlobalClass.bFoundFirstColunn = false;
+                    cSC.cBD.SetCS(ref GlobalClass.FirstEmptyColumn);
+                    cXmlFromBoard xtest = new cXmlFromBoard();
+                    xtest.ReCreateBinFile(ref GlobalClass.FirstEmptyColumn, ref cSC, "FIRST");
+                }
                 OldBoard.nchild = cSC.ThisBoardSeries.Count - LastCount;
                 BoardBeingWorked++;
                 if (cSC.bSignalSpinDone)

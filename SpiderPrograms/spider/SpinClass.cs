@@ -10,6 +10,7 @@ namespace spider
     {
         public DateTime TimeProgramStarted = DateTime.Now;
         public DateTime TimeDealStarted;
+        public cBuildDeck cBD;
         public int GameSeed;
         public bool bTrace = false;
         public bool bTrigger = false;
@@ -46,7 +47,8 @@ namespace spider
         public cBuildDeck Deck;
         public board BestBoard;
         public bool bJustReadXML = false;
-        public string XML_Diag_filename;
+        public string XML_Diag_filename;    // XML that can create a game
+        public string BIN_Diag_filename;    // output saved game file created from xml
         public List<cEventClass> EventList = new List<cEventClass>();
         public cMergeXmlFile cMXF;
         public byte[] PngArray;

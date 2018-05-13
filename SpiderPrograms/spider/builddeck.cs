@@ -131,7 +131,8 @@ namespace spider
         public List<cEventClass> AllEvents = new List<cEventClass>();
         private cSpinControl cSC;
         private card NewCard;
-        private string strSPloc = "";
+        //private string strSPloc = "";   // location of file below "nam"
+        //private string strSPnam = "";   // name but not extension
         //private string SourceXML = "Spider Solitaire.SpiderSolitaireSave-ms";
         //private string DesXML = "Spider Solitaire.SpiderSolitaireSave-ms.xml";
         private string strValue;
@@ -163,7 +164,7 @@ namespace spider
             cSC.bJustReadXML = false;
             if (XMLtoRead > 0)
             {
-                cSC.XML_Diag_filename = strSPloc + ".xml" + XMLtoRead;
+                cSC.XML_Diag_filename = GlobalClass.strSpiderName + ".xml" + XMLtoRead;
                 cSC.bJustReadXML = File.Exists(cSC.XML_Diag_filename);
                 if (!cSC.bJustReadXML)
                 {
@@ -177,7 +178,7 @@ namespace spider
             // 0 will always read the plain xml file
             // if file extension newxml exists it will alway be read in place of anything else
 
-            bool bNewExists = File.Exists(strSPloc + ".newxml");
+            bool bNewExists = File.Exists(GlobalClass.strSpiderName + ".newxml");
             if (bNewExists)
             {
                 if (cSC.bJustReadXML)
@@ -186,21 +187,27 @@ namespace spider
                     GlobalClass.NewXML_file_exists.Data.Add("MSG", "A newxml file exists, but you also requested " + cSC.XML_Diag_filename);
                     throw GlobalClass.NewXML_file_exists;
                 }
-                cSC.XML_Diag_filename = strSPloc + ".newxml";
+                cSC.XML_Diag_filename = GlobalClass.strSpiderName + ".newxml";
                 cSC.bJustReadXML = true;
                 bJustReadNewXML = true;
             }
 
+            if(XMLtoRead == -1) // this is for MakeXML so I dont have to totally rewrite this routine like I should
+            {
+                cSC.XML_Diag_filename = GlobalClass.strSpiderName + ".xml";
+                return false;
+            }
+
             if (!cSC.bJustReadXML)
             {
-                string strSubdir = strSPloc.Substring(0, strSPloc.LastIndexOf('\\'));
-                DirectoryInfo di = new DirectoryInfo(strSubdir);
+
+                DirectoryInfo di = new DirectoryInfo(GlobalClass.strSpiderDir);
                 FileInfo[] rgFiles = di.GetFiles(GlobalClass.SaveName + ".xml?");
                 foreach (FileInfo fi in rgFiles)
                 {
                     fi.Delete();
                 }
-                cSC.XML_Diag_filename = strSPloc + ".xml";
+                cSC.XML_Diag_filename = GlobalClass.strSpiderName + ".xml";
             }
 
             return cSC.bJustReadXML;
@@ -220,12 +227,12 @@ namespace spider
             }
 
             this.cSC = cSC;
-            strSPloc = strLoc;
+            cSC.cBD = this;
+            //strSPloc = Path.GetDirectoryName(strLoc) + "\\";
 
             for (i = 0; i < 12; i++)
                 msCS[i] = new cCardStack();
             GameState = new cGameState();
-
             LookForSubstituteXML(XMLtoRead);
         }
 
@@ -271,8 +278,8 @@ namespace spider
         }
     }
 
-
-        public void CreateXml(string strFullpathname, string strExt)
+        // Fullpathname may not always include extension like it used to
+        public void CreateXml()
         {
             int n, locPNG;
             int NLEN = 1048576;
@@ -281,8 +288,8 @@ namespace spider
             int bLocXml = 0;    // location of the XML in bytes from the origin of the file
             strCreatedXML = "";
             byte[] inbuf; // = new byte[NLEN];
-            // Spider Solitaire.SpiderSolitaireSave-ms;
-            FileStream inStream = File.OpenRead(strFullpathname);
+            
+            FileStream inStream = File.OpenRead(GlobalClass.strSpiderBin);
             NLEN = Convert.ToInt32(inStream.Length);
             inbuf = new byte[NLEN + 1];
             BinaryReader br = new BinaryReader(inStream);
@@ -323,11 +330,11 @@ namespace spider
             n = br.Read(inbuf, 0, xmlsize - 1);
             if (inbuf[0] != 60 || inbuf[2] != 82)
             {
-                Console.WriteLine("Unable to find xml in spider binary file:" + strFullpathname + strExt);
+                Console.WriteLine("Unable to find xml in spider binary file:" + GlobalClass.strSpiderBin);
                 Environment.Exit(0);
             }
             strCreatedXML = Encoding.Unicode.GetString(inbuf);
-            File.WriteAllText(strFullpathname + strExt, strCreatedXML);
+            File.WriteAllText(GlobalClass.strSpiderName+".xml", strCreatedXML);
             inStream.Seek(0x2028, SeekOrigin.Begin);
 #if SAVE_PNG
             cSC.PngArray = new byte[kVal];
@@ -346,20 +353,28 @@ namespace spider
 
         }
 
+        // read in a made up xml file and write out the new saved file
+        public void WriteBoardMergingXML()
+        {
+            board ThisNewBoard = new board();
+            FillDeck(ref ThisNewBoard, cSC.XML_Diag_filename);
+            cSC.LocalDealCounter = 0; // probably 0 already
+            SaveBoardAsBin(ref ThisNewBoard, "");
+        }
 
         public void GetBoardFromSpiderSave(ref board InitialBoard)
         {
             if (!cSC.bJustReadXML)
             {   // normal execution path:  take a saved game and extract the xml for parsing
-                CreateXml(strSPloc, ".xml");
-                Debug.Assert(cSC.XML_Diag_filename == strSPloc + ".xml");
+                CreateXml();
+                //Debug.Assert(cSC.XML_Diag_filename == strSPloc + ".xml");  // not true anymore as we are allowing any name for the saved game
                 FillDeck(ref InitialBoard, cSC.XML_Diag_filename);
                 OriginalSavedBoard = new board(ref InitialBoard);
                 cSC.GameSeed = Convert.ToInt32(GameState.GameSeed.ToString());
                 SaveDeck(ref OriginalSavedBoard);
                 return;
             }
-            if (bJustReadNewXML)
+            if (bJustReadNewXML) // that writeboardmerge does this stuff
             {   // for debug or testing we might want to take a fake xml and create a saved game
                 FillDeck(ref InitialBoard, cSC.XML_Diag_filename);
                 OriginalSavedBoard = new board(ref InitialBoard);
@@ -367,8 +382,8 @@ namespace spider
                 return;
             }
             OriginalSavedBoard = new board();
-            CreateXml(strSPloc, ".xml");
-            FillDeck(ref OriginalSavedBoard, strSPloc + ".xml");
+            CreateXml();
+            FillDeck(ref OriginalSavedBoard, GlobalClass.strSpiderName + ".xml");
             FillDeck(ref InitialBoard, cSC.XML_Diag_filename);
             InitialBoard.MyMoves.TraceBoard();
             cSC.GameSeed = Convert.ToInt32(GameState.GameSeed.ToString());
@@ -463,7 +478,7 @@ namespace spider
         }
 
 
-
+        // read the XML "decks" into the board
         private board FillOneDeck(ref board tb, string XMLFullpathname)
         {
             int ID_counter = 0;
@@ -791,7 +806,7 @@ namespace spider
         }
 
 
-        private void SetCS(ref board tb)
+       public void SetCS(ref board tb)
         {
             int i, j;
             column cC;
@@ -1067,7 +1082,7 @@ namespace spider
         public void SaveBoardAtDeal(ref board tb, int iLocalDeal)   // iLocalDeal is 0 on bestboard else is deal#
         {
             string strDC = (tb.DealCounter + 1).ToString();
-            FileStream outStream = File.Create(strSPloc + ".mov" + strDC);
+            FileStream outStream = File.Create(GlobalClass.strSpiderName + ".mov" + strDC);
             if(iLocalDeal>0)tb.DealString += strDC + "_" + iLocalDeal.ToString() + ",";
             StreamWriter sw = new StreamWriter(outStream);
             //SaveBoardAsXML(ref tb, sw);
@@ -1396,14 +1411,14 @@ namespace spider
         {
             SetCS(ref tb);
             cXmlFromBoard xtest = new cXmlFromBoard();
-            xtest.ReCreateBinFile(strSPloc, ref tb, ref cSC,"");
+            xtest.ReCreateBinFile(ref tb, ref cSC,"DEAL");
         }
 
         public void SaveBoardAsBin(ref board tb, string strPrefix)
         {
             SetCS(ref tb);
             cXmlFromBoard xtest = new cXmlFromBoard();
-            xtest.ReCreateBinFile(strSPloc, ref tb, ref cSC,strPrefix);
+            xtest.ReCreateBinFile(ref tb, ref cSC,strPrefix);
         }
 
         //create the event list structure from the xml

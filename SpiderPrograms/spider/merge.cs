@@ -28,31 +28,47 @@ namespace spider
 {
     public class cXmlFromBoard
     {
-
+        /*
+         * if "" then we just save the binary file as it was called by makexml
+         * if "DEAL_" then a got to write out DEAL_x and DEAL_x_y 
+         * if "SUIT_" then same as "" but add suit info to SUIT_
+         * tb.DealCounter is the actual deals which are only 1..5 or so
+         * cSC.LocalDealCounter is the variation on the deal 0..511
+         * format of output might be DEAL_2_3  for the 3rd variation of the 2nd deal
+         * 
+         * */
         private StringBuilder sbXML;
-        public void ReCreateBinFile(string strFullpathname, ref board tb, ref cSpinControl cSC, string strPrefix)
+        public void ReCreateBinFile(ref board tb, ref cSpinControl cSC, string strPrefix)
         {
             long nLen1, nLen = 1048576;
             int i, j, n;
             int DealID = cSC.LocalDealCounter;
-            string NewPrefix = "DEAL";
-            if (strPrefix != "")
-            {
-                NewPrefix = strPrefix;
-            }
-            string DealName = NewPrefix + (1 + tb.DealCounter).ToString();
-            string strNewFullpathname, strName = System.IO.Path.GetFileName(strFullpathname);
-            
+            string strFullpathname;
+            string strName, DealName = strPrefix;
 
             //FileStream inStream = File.OpenRead(strFullpathname + ".hdr");
             //BinaryReader br = new BinaryReader(inStream);
             //nLen = inStream.Length;
             //Debug.Assert(nLen == 0x2028);
 
-            if (DealID > 0)
-                DealName += "_" + DealID.ToString();
-            strNewFullpathname = strFullpathname.Replace(strName, DealName + "_" + strName);
-            FileStream outStream = File.Create( strNewFullpathname);
+            if (strPrefix != "")
+            {
+                if(strPrefix == "FIRST")
+                {
+                    strFullpathname = GlobalClass.strSpiderDir + "FirstEmptyColumn" + GlobalClass.strSpiderExt;
+                }
+                else
+                {
+                    DealName += (1 + tb.DealCounter).ToString() + "_";
+                    if (DealID > 0) DealName += DealID.ToString() + "_";
+                    strName = DealName + Path.GetFileName(GlobalClass.strSpiderOutputBinary);
+                    strFullpathname = GlobalClass.strSpiderDir + strName;
+                }
+                
+            }
+            else strFullpathname =GlobalClass.strSpiderOutputBinary;
+
+            FileStream outStream = File.Create(strFullpathname);
             BinaryWriter bw = new BinaryWriter(outStream);
 
 
@@ -80,7 +96,7 @@ namespace spider
                 nLen1++;
             }
 
-            MakeXmlFile(strNewFullpathname, ref tb, ref cSC);
+            MakeXmlFile(strFullpathname, ref tb, ref cSC);
             n = sbXML.Length;
             string sbTemp = sbXML.ToString();
             j = (int)nLen1;
@@ -142,8 +158,8 @@ namespace spider
                 writer.WriteStartElement("GameState");
                 writer.WriteElementString("Version", "7");
                 writer.WriteElementString("GameSeed", cSC.GameSeed.ToString());
-                writer.WriteElementString("Score", tb.score.ToString());
-                writer.WriteElementString("Moves", (tb.NumMoves + tb.MyMoves.TheseMoves.Count).ToString());
+                writer.WriteElementString("Score", tb.score.ToString());        // 2018 tb.score.ToString());
+                writer.WriteElementString("Moves", (1+tb.DealCounter).ToString());  // (tb.NumMoves + tb.MyMoves.TheseMoves.Count).ToString());
                 writer.WriteEndElement();   // gamestate
                 writer.WriteStartElement("CardTable");
                 writer.WriteStartElement("CardStacks");
@@ -234,7 +250,9 @@ namespace spider
                 writer.Flush();
                 if(strFullPathName.Contains("SUIT"))
                     Console.WriteLine(" Wrote out a binary suit file: " + strFullPathName);
-                else Console.WriteLine(" Wrote out a binary deal file: " + strFullPathName); 
+                else if (strFullPathName.Contains("DEAL"))
+                    Console.WriteLine(" Wrote out a binary deal file: " + strFullPathName);
+                else Console.WriteLine(" replaced with a new binary deal file: " + strFullPathName); 
                 foreach (cSuitedStatus cSS in tb.SuitStatus)
                 {
                     for (int i = 0; i < cSS.NumCompletedAndRemoved; i++)

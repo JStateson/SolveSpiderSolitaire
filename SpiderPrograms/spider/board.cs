@@ -369,6 +369,7 @@ namespace spider
             return suit;
         }
 
+        
         public int ReScoreBoard()
         {
             bool bChanged = ReScoreBoardEmptiesChanged();
@@ -377,7 +378,14 @@ namespace spider
                 bChanged = ReScoreBoardEmptiesChanged();
                 Debug.Assert(!bChanged);
             }
-            
+            if (GlobalClass.bLookForFirstColumn && (score > 500))
+            {
+                GlobalClass.FirstEmptyColumn = this;
+                GlobalClass.bLookForFirstColumn = false;
+                GlobalClass.bFoundFirstColunn = true;
+                
+            }
+
             return score;
         }
 

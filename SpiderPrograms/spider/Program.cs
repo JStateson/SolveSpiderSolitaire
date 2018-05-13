@@ -45,6 +45,10 @@ namespace spider
             {
                 File.Delete(sFile);
             }
+            foreach (string sFile in Directory.GetFiles(strDir, "FirstEmptyColumn*.*"))
+            {
+                File.Delete(sFile);
+            }
         }
 
 
@@ -78,17 +82,18 @@ namespace spider
                     // user has made it hard to find, try looking in the registry in case the windows 10 "MOVE" relocated Documents.
                     // we need to find the original Documents location, not the new one
                     Console.WriteLine("could not find " + GlobalClass.strSpiderBin + "\n");
-                    strSpiderBin0 = KnownFolderFinder.GetFolderFromKnownFolderGUID(new Guid("{FDD39AD0-238F-46AF-ADB4-6C85480369C7}"));
-                    GlobalClass.strSpiderBin = strSpiderBin0.Replace("Documents", "Saved Games\\Microsoft Games\\Spider Solitaire\\Spider Solitaire.SpiderSolitaireSave-ms");
+                    PathToDirectory = KnownFolderFinder.GetFolderFromKnownFolderGUID(new Guid("{FDD39AD0-238F-46AF-ADB4-6C85480369C7}"));
+                    GlobalClass.strSpiderBin = PathToDirectory.Replace("Documents", "Saved Games\\Microsoft Games\\Spider Solitaire\\Spider Solitaire.SpiderSolitaireSave-ms");
                     bIsThere = File.Exists(GlobalClass.strSpiderBin);
                     if (!bIsThere)
                     {
+                        string strEXE;
                         Console.WriteLine("nothing here also " + GlobalClass.strSpiderBin + "\n");
-                        Console.WriteLine("Trying local directory where this program resides\n");
-                        strSpiderBin0 = System.Reflection.Assembly.GetEntryAssembly().Location;
-                        strSpiderBin0 = System.IO.Path.GetDirectoryName(strSpiderBin0);
-                        Console.WriteLine("Looking here: " + strSpiderBin0 + "\n");
-                        strSpiderBin0 += "\\Spider Solitaire.SpiderSolitaireSave-ms";
+                        Console.WriteLine("Trying local directory where this .exe program resides\n");
+                        strEXE = System.Reflection.Assembly.GetEntryAssembly().Location;
+                        PathToDirectory = System.IO.Path.GetDirectoryName(strSpiderBin0);
+                        Console.WriteLine("Looking here: " + PathToDirectory + "\n");
+                        strSpiderBin0 = PathToDirectory + "\\Spider Solitaire.SpiderSolitaireSave-ms";
                         if (!File.Exists(strSpiderBin0))
                         {
                             Console.WriteLine("Giving up, cannot find " + strSpiderBin0);
@@ -96,10 +101,16 @@ namespace spider
                         }
                         else GlobalClass.strSpiderBin = strSpiderBin0;
                     }
+                    else strSpiderBin0 = GlobalClass.strSpiderBin;
                 }
+                else strSpiderBin0 = GlobalClass.strSpiderBin;
             }
             else GlobalClass.strSpiderBin = strSpiderBin0;
-            PathToDirectory = Path.GetDirectoryName(GlobalClass.strSpiderBin);
+            PathToDirectory = Path.GetDirectoryName(GlobalClass.strSpiderBin) + "\\";
+            GlobalClass.strSpiderOutputBinary = GlobalClass.strSpiderBin = strSpiderBin0;
+            GlobalClass.strSpiderDir = PathToDirectory ;
+            GlobalClass.strSpiderName = PathToDirectory + Path.GetFileNameWithoutExtension(strSpiderBin0);
+            GlobalClass.strSpiderExt = Path.GetExtension(strSpiderBin0);
             ClearDir(PathToDirectory);  // erases files with pattern DEAL*, SUIT*, *.mov* and adeck and those xml ones also
             cSpinControl cSC = new cSpinControl();
             DisAssemble = new cDisassemble(ref cSC);

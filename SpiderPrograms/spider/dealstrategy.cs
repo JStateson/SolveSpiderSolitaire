@@ -85,8 +85,8 @@ namespace spider
                 //stats[i]++;
 
                 nb.moveto(i, s.top, ColumnToFill);
-                    //nb.ThisColumn[i].CalculateColumnValue(i);
-                    //nb.ThisColumn[ColumnToFill].CalculateColumnValue(ColumnToFill);
+                //nb.ThisColumn[i].CalculateColumnValue(i);
+                //nb.ThisColumn[ColumnToFill].CalculateColumnValue(ColumnToFill);
                 nb.ReScoreBoard();
                 NewBoards.Add(nb);                
             }

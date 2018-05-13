@@ -102,6 +102,10 @@ namespace spider
         public const int EXTRA_POINTS_IF_UNEXPOSED_CAN_COMPLETE_SUIT = 50;
         public const int EXTRA_POINTS_IF_EXPOSED_CAN_COMPLETE_SUIT = 100;
         public static string strSpiderBin;
+        public static string strSpiderName; // path includeing name but not extension
+        public static string strSpiderExt;  // the extension
+        public static string strSpiderDir;  // path to directory that the saved game
+        public static string strSpiderOutputBinary; // same as StrSpiderBin unless we are substituting xml for testing
         public static cRankSuitType[] cRST;
         public enum eExceptionType
         {
@@ -119,6 +123,10 @@ namespace spider
             if (c.ID > 51) name += "1";
             return name;
         }
+
+        public static bool bLookForFirstColumn = true;
+        public static bool bFoundFirstColunn =false;
+        public static board FirstEmptyColumn;
 
         public static Exception Board_Completed = new Exception("Spider");
         public static Exception Runaway_Moves = new Exception("Spider");

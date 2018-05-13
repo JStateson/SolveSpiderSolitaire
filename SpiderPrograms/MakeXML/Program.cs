@@ -22,13 +22,17 @@ namespace spider
 {
     public class Program
     {
-        static int XMLtoRead = 0;
+        static int XMLtoRead = -1;
+
+
         static void Main(string[] args)
         {
             bool bIsThere = false;
             string stTemp, strSpiderBin0;
             string PathToDirectory;
             string stName = "\\Spider Solitaire.SpiderSolitaireSave-ms";
+            cSpinControl cSC;
+            board InitialBoard;
             stTemp = System.Reflection.Assembly.GetEntryAssembly().Location; // path to executable
             if (args.Count() > 0)
             {
@@ -38,12 +42,38 @@ namespace spider
             bIsThere = File.Exists(strSpiderBin0);
             if (bIsThere)
             {
-                PathToDirectory = Path.GetDirectoryName(strSpiderBin0);
+                PathToDirectory = Path.GetDirectoryName(strSpiderBin0) + "\\";
                 GlobalClass.strSpiderBin = strSpiderBin0;
-                cSpinControl cSC = new cSpinControl();
-                board InitialBoard = new board();
+                GlobalClass.strSpiderDir = PathToDirectory ;
+                GlobalClass.strSpiderName = PathToDirectory + Path.GetFileNameWithoutExtension(strSpiderBin0);
+                GlobalClass.strSpiderExt = Path.GetExtension(strSpiderBin0);
+                cSC = new cSpinControl();   // this created the default xml "filename"
+                InitialBoard = new board();
                 cSC.Deck = new cBuildDeck(strSpiderBin0, XMLtoRead, ref cSC);
-                cSC.Deck.GetBoardFromSpiderSave(ref InitialBoard);
+                if (args.Count() < 2)
+                {
+                    cSC.Deck.GetBoardFromSpiderSave(ref InitialBoard);
+                }
+                else if (args.Count() == 3)
+                {
+                    if (args[0] == args[2])
+                    {
+                        Console.WriteLine("cannot have same output file name as the input saved game\n");
+                        Environment.Exit(0);
+                    }
+                    stTemp =  PathToDirectory + Path.GetFileNameWithoutExtension(args[1]);
+                    if (GlobalClass.strSpiderName == stTemp)
+                    {
+                        Console.WriteLine("should not have same input saved game name as the input xml filename\n");
+                        Console.WriteLine("or input xml file will be over written as that filename used for temp storage\n");
+                        Environment.Exit(0);
+                    }
+                    GlobalClass.strSpiderOutputBinary  = cSC.BIN_Diag_filename = PathToDirectory + args[2];
+                    cSC.Deck.GetBoardFromSpiderSave(ref InitialBoard);  // read in the saved game and also create the matching xml
+                    cSC.XML_Diag_filename = PathToDirectory + args[1];                   
+                    cSC.Deck.WriteBoardMergingXML();
+                }
+
             }
         }
     }
