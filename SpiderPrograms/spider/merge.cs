@@ -55,7 +55,7 @@ namespace spider
             {
                 if(strPrefix == "FIRST")
                 {
-                    strFullpathname = GlobalClass.strSpiderDir + "FirstEmptyColumn" + GlobalClass.strSpiderExt;
+                    strFullpathname = GlobalClass.strSpiderDir + "FirstEmptyColumn" + (1 + tb.DealCounter).ToString() + GlobalClass.strSpiderExt;
                 }
                 else
                 {

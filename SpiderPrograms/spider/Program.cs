@@ -56,17 +56,31 @@ namespace spider
         static void Main(string[] args)
         {
             bool bIsThere = false;
-            string strSpiderBin0;
+            string strSpiderBin0= "";
             string PathToDirectory;
-
+            string stTemp = System.Reflection.Assembly.GetEntryAssembly().Location; // path to executable
             // KnownFolderFinder.EnumerateKnownFolders();   // this was used for testing purposes
             // GlobalClass.InitExceptions();
-            // look for file in current director first and use that one - 5/2018
 
-            string stTemp = System.Reflection.Assembly.GetEntryAssembly().Location; // path to executable
-            strSpiderBin0 = System.IO.Path.GetDirectoryName(stTemp) + "\\Spider Solitaire.SpiderSolitaireSave-ms";
-            bIsThere = File.Exists(strSpiderBin0);
+            // if argument is supplied and extension is a saved game, then use that
 
+            if (args.Count() > 0)
+            {
+                if(args[0].Contains(".SpiderSolitaireSave-ms"))
+                {
+                    strSpiderBin0 = System.IO.Path.GetDirectoryName(stTemp) + "\\" +args[0];
+                    bIsThere = File.Exists(strSpiderBin0);
+                    Debug.Assert(bIsThere);
+                    GlobalClass.strSpiderBin = strSpiderBin0;
+                }
+            }
+            else
+            {
+                // look for file in current director and use that one
+                strSpiderBin0 = System.IO.Path.GetDirectoryName(stTemp) + "\\Spider Solitaire.SpiderSolitaireSave-ms";
+                bIsThere = File.Exists(strSpiderBin0);
+
+            }
             if (!bIsThere)
             {
 
@@ -159,6 +173,8 @@ namespace spider
             cSC.Deck = new cBuildDeck(strSpiderBin, XMLtoRead, ref cSC);
             MakeAllPossibleMoves = new cSpinAllMoves(ref cSC);
             cSC.Deck.GetBoardFromSpiderSave(ref InitialBoard);
+            if (InitialBoard.NumEmptyColumns > 0)
+                GlobalClass.bFoundFirstColunn = false;  // started with an empty column, no need to display it.
             InitialBoard.ShowBoard();
 
             cSC.cMXF = new cMergeXmlFile();
@@ -379,6 +395,8 @@ namespace spider
                                     // want to have at least this many from the filter if possible
             cSC.BestScore = 0;      // this may get new boards into SortedScores at least on the next filter run
             cSC.stlookup.Clear();
+            GlobalClass.bLookForFirstColumn = true;
+            GlobalClass.bFoundFirstColunn = false;
             return m;
         }
         public static void HandleNewStrategy(GlobalClass.StrategyType gcst, ref cSpinControl cSC,ref int FilterSize)
