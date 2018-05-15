@@ -1078,11 +1078,14 @@ namespace spider
             sw.Close();
         }
 
+
+
+
         // this is called from the deal handler to save each deal
         public void SaveBoardAtDeal(ref board tb, int iLocalDeal)   // iLocalDeal is 0 on bestboard else is deal#
         {
             string strDC = (tb.DealCounter + 1).ToString();
-            FileStream outStream = File.Create(GlobalClass.strSpiderName + strDC + ".mov");
+            FileStream outStream = File.Create(GlobalClass.strSpiderName + strDC + "_mov.txt");
             if(iLocalDeal>0)tb.DealString += strDC + "_" + iLocalDeal.ToString() + ",";
             StreamWriter sw = new StreamWriter(outStream);
             //SaveBoardAsXML(ref tb, sw);
@@ -1110,10 +1113,22 @@ namespace spider
             TraceAllMoves(ref cSC.BestBoard, null);
         }
 
+        public void SaveFirstBoardMoves(ref board tb)
+        { 
+            string strFullpathname = GlobalClass.strSpiderDir + "FirstEmptyColumn" + (1 + tb.DealCounter).ToString() + "_mov.txt";
+            FileStream outStream = File.Create(strFullpathname);
+            //if (iLocalDeal > 0) tb.DealString += strDC + "_" + iLocalDeal.ToString() + ",";
+            StreamWriter sw = new StreamWriter(outStream);
+            SerializeMoveEvents(ref tb, sw);
+            tb.MyMoves.TraceBoard(sw);
+            tb.ShowRawBoard(sw, false, 0);
+            //TraceAllMoves(ref tb, sw); // no need to show all other possiblities, just this board.
+            sw.Close();
+        }
 
         // 14nov2012 this does not seem to work if there is more then one suit completed????
         // wait wait!!! c is not even used!!!
-        private void SerializeMoveEvents(ref board nb, StreamWriter sw)
+        public void SerializeMoveEvents(ref board nb, StreamWriter sw)
         {
             int i, n = nb.MyMoves.TheseMoves.Count;
             int LocalDealCounter = 0;

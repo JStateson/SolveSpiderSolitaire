@@ -85,7 +85,7 @@ namespace spider
         public static int MinTimeout = 120;              // 30 was 120
 #else
         public static int TraceBits = 6;    // was 2
-#endif
+
 
 #if (bin32)
         public static int MaxInsertsWhenSuiting = 100000;
@@ -99,6 +99,7 @@ namespace spider
         public static int MinTimeout = 500;
 #endif
 
+#endif
 
         public const int FIRST_CARD = 1;
         public const int DEALT_A_CARD = 2;    // 0xe000  rank 14 does not exist

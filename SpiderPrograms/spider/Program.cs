@@ -41,7 +41,7 @@ namespace spider
             {
                 File.Delete(sFile);
             }
-            foreach (string sFile in Directory.GetFiles(strDir, "*.mov"))
+            foreach (string sFile in Directory.GetFiles(strDir, "*_mov.txt"))
             {
                 File.Delete(sFile);
             }

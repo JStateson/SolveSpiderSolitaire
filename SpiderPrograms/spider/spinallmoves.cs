@@ -912,6 +912,7 @@ namespace spider
                     cSC.cBD.SetCS(ref GlobalClass.FirstEmptyColumn);
                     cXmlFromBoard xtest = new cXmlFromBoard();
                     xtest.ReCreateBinFile(ref GlobalClass.FirstEmptyColumn, ref cSC, "FIRST");
+                    cSC.Deck.SaveFirstBoardMoves(ref GlobalClass.FirstEmptyColumn);
                 }
                 OldBoard.nchild = cSC.ThisBoardSeries.Count - LastCount;
                 BoardBeingWorked++;

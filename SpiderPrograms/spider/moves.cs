@@ -250,6 +250,7 @@ namespace spider
             TraceBoard(null);
         }
 
+        //  this displays the board in a console (null) or writes to a file (sw not null)
         public void TraceBoard(StreamWriter sw)
         {
             int i, j, k, e, r, NumMoves = TheseMoves.Count;
