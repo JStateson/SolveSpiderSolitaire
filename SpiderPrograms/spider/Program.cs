@@ -41,7 +41,7 @@ namespace spider
             {
                 File.Delete(sFile);
             }
-            foreach (string sFile in Directory.GetFiles(strDir, "*.mov*"))
+            foreach (string sFile in Directory.GetFiles(strDir, "*.mov"))
             {
                 File.Delete(sFile);
             }
@@ -63,6 +63,8 @@ namespace spider
             // GlobalClass.InitExceptions();
 
             // if argument is supplied and extension is a saved game, then use that
+
+            Console.WriteLine("MinInserts:" + GlobalClass.MinInserts);
 
             if (args.Count() > 0)
             {
@@ -125,7 +127,7 @@ namespace spider
             GlobalClass.strSpiderDir = PathToDirectory ;
             GlobalClass.strSpiderName = PathToDirectory + Path.GetFileNameWithoutExtension(strSpiderBin0);
             GlobalClass.strSpiderExt = Path.GetExtension(strSpiderBin0);
-            ClearDir(PathToDirectory);  // erases files with pattern DEAL*, SUIT*, *.mov* and adeck and those xml ones also
+            ClearDir(PathToDirectory);  // erases files with pattern DEAL*, SUIT*, *.mov and adeck and those xml ones also
             cSpinControl cSC = new cSpinControl();
             DisAssemble = new cDisassemble(ref cSC);
             Suitable = new csuitable(ref cSC, ref DisAssemble);

@@ -85,6 +85,14 @@ namespace spider
         public static int MinTimeout = 120;              // 30 was 120
 #else
         public static int TraceBits = 6;    // was 2
+#endif
+
+#if (bin32)
+        public static int MaxInsertsWhenSuiting = 100000;
+        public static int MinInserts = 50000;
+        public static int MaxTimeoutWhenSuiting = 100;
+        public static int MinTimeout = 50;
+#else
         public static int MaxInsertsWhenSuiting = 600000;
         public static int MinInserts = 300000;
         public static int MaxTimeoutWhenSuiting = 1000;

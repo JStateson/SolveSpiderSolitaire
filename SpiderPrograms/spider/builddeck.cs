@@ -1082,7 +1082,7 @@ namespace spider
         public void SaveBoardAtDeal(ref board tb, int iLocalDeal)   // iLocalDeal is 0 on bestboard else is deal#
         {
             string strDC = (tb.DealCounter + 1).ToString();
-            FileStream outStream = File.Create(GlobalClass.strSpiderName + ".mov" + strDC);
+            FileStream outStream = File.Create(GlobalClass.strSpiderName + strDC + ".mov");
             if(iLocalDeal>0)tb.DealString += strDC + "_" + iLocalDeal.ToString() + ",";
             StreamWriter sw = new StreamWriter(outStream);
             //SaveBoardAsXML(ref tb, sw);

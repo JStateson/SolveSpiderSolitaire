@@ -121,9 +121,11 @@ namespace spider
             bool bMore=true;
             int lBest = tb.score;
             int NumWantedMax = 32;
+            int NumWantedMin = 16;
             int NumWanted = tb.NumEmptyColumns * NumWantedMax * NumBoardsTotal;
+            if (NumWanted < NumWantedMin) NumWanted = NumWantedMin;
             int NumGenerated = 0;
-            int DecimationCnt = NumWanted / NumWantedMax;
+            int DecimationCnt = tb.NumEmptyColumns * NumBoardsTotal;
             int[] NumDealtTo;
             if (DecimationCnt == 0) DecimationCnt = 1;
             tb.bWasDealtTo = false;
@@ -132,7 +134,7 @@ namespace spider
             StartOfDealPtr = nbPtr;
             tb.CopyWorkingInts(ref OEmpties, GlobalClass.WorkingType.tEmpties);            
             tb.score = lBest;
-
+            
             NumGenerated += AddBoard(ref tb, TimeOfLastDeal);
             bMore = (NumGenerated < NumWanted) ;
             // we reduced this board to a series that have 1 column less (if it has an empty column)
