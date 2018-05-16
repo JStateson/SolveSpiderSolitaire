@@ -389,6 +389,7 @@ namespace spider
             cSC.GameSeed = Convert.ToInt32(GameState.GameSeed.ToString());
         }
 
+        // there should only be two aces of spades as this program works only with 2 decks
         private void FillDeck(ref board tb, string XMLFullpathname)
         {
             int i, n, destStack, srcStack;
@@ -479,6 +480,7 @@ namespace spider
 
 
         // read the XML "decks" into the board
+        // count number of spades, expect only 26 / 13 for 2 decks
         private board FillOneDeck(ref board tb, string XMLFullpathname)
         {
             int ID_counter = 0;
@@ -488,6 +490,7 @@ namespace spider
             DoingDeck = false;
             DoingComplete = false;
             bFaceUp = false;
+            int NumSpades = 0;
             string strT;
             XmlTextReader reader = new XmlTextReader(XMLFullpathname);
             bool bMore = true;
@@ -653,6 +656,7 @@ namespace spider
                             if (strName.Contains("Spades"))
                             {
                                 CurrentSuit = 's';
+                                NumSpades++;
                             }
                             if (strName.Contains("Hearts"))
                             {
@@ -796,6 +800,12 @@ namespace spider
                 }
             }
             reader.Close();
+            NumSpades /= 13;
+            if (NumSpades != 2)
+            {
+                Console.WriteLine("This program works only with 2 decks and all 4 suits\n");
+                Environment.Exit(0);
+            }
             tb.ReScoreBoard();
             return tb;
         }
