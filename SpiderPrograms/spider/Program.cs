@@ -31,6 +31,24 @@ namespace spider
         
         static cTest Test;
 
+       static void CreateClearFile(string strDir)
+        {
+
+            string strOut = "";
+            //File.Delete(strDir);
+            FileStream outStream = File.Create(strDir + "\\aRemoveFiles.bat");
+            StreamWriter sw = new StreamWriter(outStream);
+            strOut += "del adeck.txt\n";
+            strOut += "del DEAL?_*.*\n";
+            strOut += "del SUIT_*.*\n";
+            strOut += "del FirstEmptyColumn*.*\n";
+            strOut += "del Spider*.xml\n";
+            strOut += "del Spider*_mov.txt";
+            sw.WriteLine(strOut);
+            Console.WriteLine("working in directory: " + strDir + "\n");
+            sw.Close();
+        }
+
         static void ClearDir(string strDir)
         {
             foreach (string sFile in Directory.GetFiles(strDir, "DEAL*.*"))
@@ -49,6 +67,7 @@ namespace spider
             {
                 File.Delete(sFile);
             }
+            CreateClearFile(strDir);
         }
 
 
