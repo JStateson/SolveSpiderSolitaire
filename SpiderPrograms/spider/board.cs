@@ -1066,6 +1066,7 @@ namespace spider
             ShowRawBoard(null, true,0);
         }
 
+        // Show11 shows column 11 but only for "adeck" 
         public  void ShowRawBoard(StreamWriter sw, bool bShowID, int Show11)
         {
             int m;
@@ -1077,6 +1078,11 @@ namespace spider
             if (Show11 > 0)
             {
                 strOL = "";
+                for (i = 10; i >0;  i--)
+                {
+                    strOL += String.Format("{0,6}", i);
+                }
+                strOL += "\n";
                 for (i = 1; i < 11; i++)
                 {
                     strOL += String.Format("{0,6}", i);

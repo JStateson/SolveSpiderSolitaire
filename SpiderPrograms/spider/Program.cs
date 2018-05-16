@@ -70,7 +70,8 @@ namespace spider
             {
                 if(args[0].Contains(".SpiderSolitaireSave-ms"))
                 {
-                    strSpiderBin0 = System.IO.Path.GetDirectoryName(stTemp) + "\\" +args[0];
+                    string path = Directory.GetCurrentDirectory();
+                    strSpiderBin0 = path + "\\" +args[0];
                     bIsThere = File.Exists(strSpiderBin0);
                     Debug.Assert(bIsThere);
                     GlobalClass.strSpiderBin = strSpiderBin0;
