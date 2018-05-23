@@ -38,12 +38,11 @@ namespace spider
             //File.Delete(strDir);
             FileStream outStream = File.Create(strDir + "\\aRemoveFiles.bat");
             StreamWriter sw = new StreamWriter(outStream);
-            strOut += "del adeck.txt\n";
-            strOut += "del DEAL?_*.*\n";
-            strOut += "del SUIT_*.*\n";
-            strOut += "del FirstEmptyColumn*.*\n";
+            strOut += "del adeck*.txt\n";
+            strOut += "del DEAL?_*.SpiderSolitaireSave-ms\n";
+            strOut += "del deal?_*mov.txt\n";
+            strOut += "del a?FirstEmptyColumn*.*\n";
             strOut += "del Spider*.xml\n";
-            strOut += "del Spider*_mov.txt";
             sw.WriteLine(strOut);
             Console.WriteLine("working in directory: " + strDir + "\n");
             sw.Close();
@@ -51,19 +50,15 @@ namespace spider
 
         static void ClearDir(string strDir)
         {
-            foreach (string sFile in Directory.GetFiles(strDir, "DEAL*.*"))
+            foreach (string sFile in Directory.GetFiles(strDir, "DEAL*.SpiderSolitaireSave-ms"))
             {
                 File.Delete(sFile);
             }
-            foreach (string sFile in Directory.GetFiles(strDir, "SUIT_*.*"))
+            foreach (string sFile in Directory.GetFiles(strDir, "Deal*_mov.txt"))
             {
                 File.Delete(sFile);
             }
-            foreach (string sFile in Directory.GetFiles(strDir, "*_mov.txt"))
-            {
-                File.Delete(sFile);
-            }
-            foreach (string sFile in Directory.GetFiles(strDir, "FirstEmptyColumn*.*"))
+                foreach (string sFile in Directory.GetFiles(strDir, "a?FirstEmptyColumn*.*"))
             {
                 File.Delete(sFile);
             }
@@ -78,12 +73,13 @@ namespace spider
             string strSpiderBin0= "";
             string PathToDirectory;
             string stTemp = System.Reflection.Assembly.GetEntryAssembly().Location; // path to executable
-            // KnownFolderFinder.EnumerateKnownFolders();   // this was used for testing purposes
-            // GlobalClass.InitExceptions();
+                                                                                    // KnownFolderFinder.EnumerateKnownFolders();   // this was used for testing purposes
+                                                                                    // GlobalClass.InitExceptions();
 
             // if argument is supplied and extension is a saved game, then use that
-
-            Console.WriteLine("MinInserts:" + GlobalClass.MinInserts);
+            GlobalClass.bLookForFirstColumn = true;
+            GlobalClass.bFoundFirstColunn = false;
+            Console.WriteLine("Spider(v) 1.0; 5-20-2018; Copyright Joseph Stateson:  josephy@stateson.net\n");
 
             if (args.Count() > 0)
             {
@@ -200,7 +196,7 @@ namespace spider
             InitialBoard.ShowBoard();
 
             cSC.cMXF = new cMergeXmlFile();
-
+            
             if (cSC.bJustReadXML)
             {
                 Console.WriteLine(" Did you mean to read a pre-existing XML file?\n - close window to abort\n - or press N to delete the XML file and abort\n - or press Y to continue");
@@ -358,29 +354,31 @@ namespace spider
             //}
         }
 
-        // 11nov2012 got to identify which deal was actually used.  suggest filename of DEAL1-1, DEAL1-2, ETC
-        // then when the second deal occures the true board can be displayed as
-        // DEAL1-3  if the 3rd deal was used by the time we got to DEAL2.  Note that there is a possibility that
-        // DEAL4 might use DEAL1-2 if that deal was better at the end game.  
+
+        // save the DEALx which is the best of the DEALx_1, DEALx..12 etc and takes a while to identify
+        // usually the FirstEmptyColumn deck is just as good to use and is calculated earlier
+        private static void SaveBestBoard(ref cSpinControl cSC)
+        {
+            cSC.LocalDealCounter = 0;
+            cSC.BestBoard.DealCountIndex = cSC.LocalDealCounter;
+            cSC.Deck.SaveBoardAtDeal(GlobalClass.eSBAD.eStartGather, ref cSC.BestBoard, 0);
+            if (cSC.bSpinDidAllBoards && cSC.BestBoard.DealCounter == 5)
+            {
+                // if we ran that reduce suits here it would be nice 16nov2012               }
+                GlobalClass.No_Cards_Left.Data.Add("MSG", "Out of Cards in HandleDeal");
+                throw GlobalClass.No_Cards_Left;
+            }
+        }
 
         public static int HandleDeal(ref cSpinControl cSC, bool bDealThruSeed)
         {
             int m, n = cSC.ThisBoardSeries.Count; // utils.UseThisManyBoards(ref cSC);
             cDealStrategy DealStrategy = new cDealStrategy(ref cSC);            
-            board tb;
+            board tb = null;
             int j, nNewBoards=0;
-            if (cSC.BestBoard != null)
-            {
-                cSC.LocalDealCounter = 0;
-                cSC.BestBoard.DealCountIndex = cSC.LocalDealCounter;
-                cSC.Deck.SaveBoardAtDeal(ref cSC.BestBoard,0);
-                if (cSC.bSpinDidAllBoards && cSC.BestBoard.DealCounter == 5)
-                {
-                    // if we ran that reduce suits here it would be nice 16nov2012               }
-                    GlobalClass.No_Cards_Left.Data.Add("MSG", "Out of Cards in HandleDeal");
-                    throw GlobalClass.No_Cards_Left;
-                }
-            }
+
+            if (cSC.BestBoard != null) SaveBestBoard(ref cSC);
+
             if (bDealThruSeed)
                 n = cSC.ThisSeed.Seeds.Count;            
             if (n > GlobalClass.MAX_FILTERED_BOARDS)
@@ -399,14 +397,27 @@ namespace spider
                 // nNewBoards mistakenly includes dead boards so dont check for n==m anymore
                 cSC.LocalDealCounter++;
                 tb.DealCountIndex = cSC.LocalDealCounter;
-                if(i < 12)cSC.Deck.SaveBoardAtDeal(ref tb,i+1); // 5/2018 usually far less than 12 are useful
+                // save only the first 12 boards of the deal.  the deal is against the previous deck
+                if (i < GlobalClass.MaxDealsToShow)
+                {
+                    bool bOnLast = ((i == (n - 1)) || (i == (GlobalClass.MaxDealsToShow - 1)));
+                    cSC.Deck.SaveBoardAtDeal(bOnLast ? GlobalClass.eSBAD.eAllGathered : GlobalClass.eSBAD.eContinue, ref tb, i);
+                    if (tb.MyMoves.TheseMoves.Count() < 6)
+                    {
+                        int kk = 0;
+                    }
+                }
                 if (nNewBoards > GlobalClass.MinInserts) break;
             }
             m = DealStrategy.GetBoards(ref cSC);
-            Debug.Assert(m>0);
             if (m <= 0)
             {
-                Console.WriteLine("problem with handleing deal! m:" + m + " nNewBoards:" + nNewBoards);
+                if (tb.DealCounter < 5)
+                {
+                    Debug.Assert(m > 0);
+                    Console.WriteLine("problem with handleing deal! m:" + m + " nNewBoards:" + nNewBoards);
+                }
+                else Console.WriteLine("Game over\n");
                 Environment.Exit(0);
             }
             tb = cSC.ThisBoardSeries[0];
@@ -417,8 +428,8 @@ namespace spider
                                     // want to have at least this many from the filter if possible
             cSC.BestScore = 0;      // this may get new boards into SortedScores at least on the next filter run
             cSC.stlookup.Clear();
-            GlobalClass.bLookForFirstColumn = true;
-            GlobalClass.bFoundFirstColunn = false;
+            //GlobalClass.bLookForFirstColumn = true;  // ONLY WANT TO DO THIS ONCE FOR VERY FIRST TIME.
+            //GlobalClass.bFoundFirstColunn = false;
             return m;
         }
         public static void HandleNewStrategy(GlobalClass.StrategyType gcst, ref cSpinControl cSC,ref int FilterSize)

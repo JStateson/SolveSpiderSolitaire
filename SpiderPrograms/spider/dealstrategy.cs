@@ -117,8 +117,8 @@ namespace spider
 
         public int DealToBoard(ref board tb, DateTime TimeOfLastDeal, int NumBoardsTotal)
         {
-            int i,n, NumEmpties, NonEmpties, nbPtr = NewBoards.Count;
-            bool bMore=true;
+            int i, n, NumEmpties, NonEmpties, nbPtr = NewBoards.Count;
+            bool bMore = true;
             int lBest = tb.score;
             int NumWantedMax = 32;
             int NumWantedMin = 16;
@@ -130,13 +130,13 @@ namespace spider
             if (DecimationCnt == 0) DecimationCnt = 1;
             tb.bWasDealtTo = false;
 
-            if(OutOfCardsOrDone(ref tb))return 0;
+            if (OutOfCardsOrDone(ref tb)) return 0;
             StartOfDealPtr = nbPtr;
-            tb.CopyWorkingInts(ref OEmpties, GlobalClass.WorkingType.tEmpties);            
+            tb.CopyWorkingInts(ref OEmpties, GlobalClass.WorkingType.tEmpties);
             tb.score = lBest;
-            
+
             NumGenerated += AddBoard(ref tb, TimeOfLastDeal);
-            bMore = (NumGenerated < NumWanted) ;
+            bMore = (NumGenerated < NumWanted);
             // we reduced this board to a series that have 1 column less (if it has an empty column)
             while (bMore)
             {
@@ -202,6 +202,9 @@ namespace spider
             //        }
             //    }
             //}
+
+            //Console.WriteLine("NW:" + NumWanted + "  DC:" + DecimationCnt + "  NC:" + NumCreated + "  NG:" + NumGenerated + "  ====\n");
+
             return NumCreated;
         }
 

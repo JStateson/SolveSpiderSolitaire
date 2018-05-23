@@ -60,7 +60,8 @@ namespace spider
         public cMoveClass MyMoves = new cMoveClass();
         public int NumCompletedSuits;
         public bool NewlyCompleted;
-        public int DealCounter;
+        public int DealCounter;     // 0 means uninitialized otherwise there are 5 possibles deals note that
+            // the windows Spider Solitaire shows only 4 deal hands when there are actually 5 possible deals after setup.
         //public const int FIRST_CARD = -16384;
         //public const int DEALT_A_CARD = -8192;    // 0xe000  rank 14 does not exist
         //public const int BUILT_SUIT = -4096;      // 0xf000  neither does rank 15
@@ -109,7 +110,7 @@ namespace spider
                 ThisColumn[i].init();
             }
             bOnLastDeal = false;
-            DealCounter = 0;
+            DealCounter = 0;    // deal 0 is the initial board
             NumCompletedSuits = 0;
             tag = 0;
             TopMost = new List<card>();
@@ -151,7 +152,7 @@ namespace spider
                 UnexposedTypes.Add(nb.UnexposedTypes[i]);
             strSuitsRemoved = nb.strSuitsRemoved;
             DealString = nb.DealString;
-            for (i = 0; i < 11; i++)
+            for (i = 0; i < 12; i++)    //2018 should have copied the completed ones also
             {
                 cCol = nb.ThisColumn[i];
                 for (j = 0; j < cCol.Cards.Count; j++)
@@ -373,12 +374,13 @@ namespace spider
         public int ReScoreBoard()
         {
             bool bChanged = ReScoreBoardEmptiesChanged();
+            int JusColVal = score - (GlobalClass.SUIT_WEIGHT * NumCompletedSuits);
             if (bChanged)
             {
                 bChanged = ReScoreBoardEmptiesChanged();
                 Debug.Assert(!bChanged);
             }
-            if (GlobalClass.bLookForFirstColumn && (score > 500))
+            if (GlobalClass.bLookForFirstColumn && (JusColVal > GlobalClass.COL_WEIGHT))
             {
                 GlobalClass.FirstEmptyColumn = this;
                 GlobalClass.bLookForFirstColumn = false;
@@ -592,7 +594,7 @@ namespace spider
 
                 k += tc.value;
             }
-            i = 3000 * NumCompletedSuits;
+            i = GlobalClass.SUIT_WEIGHT * NumCompletedSuits;
             i += k;
 
             if (NewlyCompleted)
@@ -999,7 +1001,7 @@ namespace spider
             bOnLastDeal = (ThisColumn[10].Cards.Count == 0) ;
             ReScoreBoard(); // replaced "lBest" with the local deal counter
             if (bOnLastDeal && NumEmptyColumns > 1)
-                score += 500;   // nov2012 want to keep a few colums empty
+                score += GlobalClass.COL_WEIGHT;   // nov2012 want to keep a few colums empty
             MyMoves.AddMoveInfo(GlobalClass.DEALT_A_CARD,DealCountIndex, DealCounter);  // 11nov2012 need to id the deal
             foreach (cSuitedStatus css in SuitStatus)
             {
@@ -1063,11 +1065,17 @@ namespace spider
 
         public void ShowRawBoardIDs()
         {
-            ShowRawBoard(null, true,0);
+            ShowRawBoard(null, true,1);
+        }
+
+        public void ShowRawBoard(StreamWriter sw, bool bShowID, int Show11)
+        {
+            string strOut = AssembleRawBoard(sw, bShowID, Show11);
+            if (sw == null) Console.WriteLine(strOut);
         }
 
         // Show11 shows column 11 but only for "adeck" 
-        public  void ShowRawBoard(StreamWriter sw, bool bShowID, int Show11)
+        public  string  AssembleRawBoard(StreamWriter sw, bool bShowID, int Show11)
         {
             int m;
             string strOL;
@@ -1075,6 +1083,7 @@ namespace spider
             int i, n, r = 0;
             int tValue = 0;
             string strCnt, strMove;
+            string strAccululate = "";
             if (Show11 > 0)
             {
                 strOL = "";
@@ -1082,12 +1091,12 @@ namespace spider
                 {
                     strOL += String.Format("{0,6}", i);
                 }
-                strOL += "\n";
+                strOL += "\r\n";
                 for (i = 1; i < 11; i++)
                 {
                     strOL += String.Format("{0,6}", i);
                 }
-                sw.WriteLine(strOL+"\n");
+                strAccululate += strOL + "\r\n";
             }
             m = 0;
             for (i = 0; i < 10 + Show11; i++)
@@ -1106,7 +1115,10 @@ namespace spider
                     if (n <= r) strOL += "      ";
                     else
                     {
-                        if (bShowID) strOL += ThisColumn[i].Cards[r].GetFormattedID(6);
+                        if (bShowID)
+                        {
+                            strOL += ThisColumn[i].Cards[r].GetFormattedID(6);
+                        }
                         else strOL += ThisColumn[i].Cards[r].GetFormattedName(6);
                     }
                 }
@@ -1114,12 +1126,7 @@ namespace spider
                 r++;
 
                 strMove = strOL + strCnt;
-                if (sw == null)
-                    Console.WriteLine(strMove);
-                else
-                {
-                    sw.WriteLine(strMove);
-                }
+                strAccululate += strMove + "\r\n";
 
                 bMore = (r < m);
             }
@@ -1134,12 +1141,8 @@ namespace spider
             strMove += " NumMoves:" + (NumMoves + MyMoves.TheseMoves.Count) + " Score:" + score + strOL + " RemStacks:" + ThisColumn[10].Cards.Count/10;
             strOL = "";
 
-            if (sw == null)
-                Console.WriteLine(strMove);
-            else
-            {
-                sw.WriteLine(strMove);
-            }
+            strAccululate += strMove + "\r\n";
+
 
 
             for (i = 0; i < (11+Show11); i++)
@@ -1157,12 +1160,9 @@ namespace spider
                 strOL += strTemp;
             }
 
-            if (sw == null)
-                Console.WriteLine(strOL + "\nDeals:" + DealString + "\n");
-            else
-            {
-                sw.WriteLine(strOL + "\nDeals:" + DealString);
-            }
+            strAccululate += strOL + "\nDeals:" + DealString + "\n";
+            if (sw != null) sw.WriteLine(strAccululate);
+            return strAccululate;
         }
 
         public bool Comparable(ref board nb)

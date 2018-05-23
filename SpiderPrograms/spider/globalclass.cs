@@ -79,10 +79,10 @@ namespace spider
  * 10: in TrySpin and was used to check the verify code but is not used anymore
  */
         public static int TraceBits = 6;//(2 + 4); // 18 (10x + 2)
-        public static int MaxInsertsWhenSuiting = 200000;
-        public static int MinInserts = 100000;
-        public static int MaxTimeoutWhenSuiting = 240;   // 60 was 240
-        public static int MinTimeout = 120;              // 30 was 120
+        public static int MaxInsertsWhenSuiting = 200000; // was 200000
+        public static int MinInserts = 100000;              // was 100000
+        public static int MaxTimeoutWhenSuiting = 240;   // was 240
+        public static int MinTimeout = 120;              // was 120
 #else
         public static int TraceBits = 6;    // was 2
 
@@ -100,13 +100,22 @@ namespace spider
 #endif
 
 #endif
+        public enum eSBAD   // Save Board At Deal move token
+        {
+            eStartGather,   // find a place to record the moves for each deal
+            eContinue,      // gather moves for writeing to best board later
+            eAllGathered    // save all gathered moves, if any
+        }
 
+        public const int COL_WEIGHT = 500;
+        public const int SUIT_WEIGHT = 3000;
         public const int FIRST_CARD = 1;
         public const int DEALT_A_CARD = 2;    // 0xe000  rank 14 does not exist
         public const int BUILT_SUIT = 3;      // 0xf000  neither does rank 15
         public const int MAXINFO = 14;        // 1 initial card, 5 deals, 8 built suits
         public const int MAX_FILTERED_BOARDS = 512; // was 512
         public const int MIN_FILTERED_BOARDS = 20;  // was 20
+        public const int MaxDealsToShow = 12;  // dont need more than 12 and probably only for tracing purposes
         public const int STLOOKUP_MPLY = 128;
         public const int EXTRA_POINTS_IF_UNEXPOSED_CAN_COMPLETE_SUIT = 50;
         public const int EXTRA_POINTS_IF_EXPOSED_CAN_COMPLETE_SUIT = 100;

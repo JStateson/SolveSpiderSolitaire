@@ -130,7 +130,8 @@ namespace spider
 
                 if (WriteOnce)
                 {
-                    cSC.Deck.SaveBoardAsBin(ref tb, "SUIT_" + NumSuitsWritten.ToString() + strJustCompleted + "_");
+                    string strName = cSC.Deck.SaveBoardAsBin(ref tb, eSavedType.eSUIT);
+                    cSC.Deck.SaveBoardMoves(ref tb, strName);
                 }
 
             }
@@ -189,7 +190,7 @@ namespace spider
                 cSC.bSignalSpinDone = true;
                 return false;
             }
-            if (tb.score > 3000)
+            if (tb.score > GlobalClass.SUIT_WEIGHT)
             {
                 Num3000++;
                 if (tb.NotifySuitJustCompleted)
@@ -233,7 +234,7 @@ namespace spider
                 //if (NumOne > ((1 + tb.DealCounter) * 1000) && NumTwo == 0)
                 if (NumTwo == 0)
                 {
-                    if (NumOne > (tb.DealCounter < 2 ? 3000 : 6000))
+                    if (NumOne > (tb.DealCounter < 2 ? GlobalClass.SUIT_WEIGHT : (2* GlobalClass.SUIT_WEIGHT)))
                     {
                         cSC.bSignalSpinDone = true;
                         cSC.bExceededONEcolLimit = true;
@@ -285,13 +286,13 @@ namespace spider
             if (cSC.bSignalSpinDone) return false;
 
             LastCount = cSC.ThisBoardSeries.Count;
-            if (cSC.BestScore > 500)
+            if (cSC.BestScore > GlobalClass.COL_WEIGHT)
             {
                 if (cSC.BestScore > LastBest)
                 {
                     if ((GlobalClass.TraceBits & 2) > 0)
                     {
-                        TraceBoard(LastCount - 1);
+                        Console.WriteLine( TraceBoard(LastCount - 1));
                         dtDiff = DateTime.Now.Subtract(dtFirstBoard);
                         tb.ShowBoard();
                         TimeSinceFilter = DateTime.Now.Subtract(TimeSinceFilterRan);
@@ -489,9 +490,9 @@ namespace spider
         }
 
 
-        public void TraceBoard(int iBoard)
+        public string TraceBoard(int iBoard)
         {
-            cSC.ThisBoardSeries[iBoard].MyMoves.TraceBoard(null);
+            return cSC.ThisBoardSeries[iBoard].MyMoves.TraceBoard(null);
         }
 
 
@@ -559,7 +560,7 @@ namespace spider
             if ((GlobalClass.TraceBits & 2) > 0)
             {
                 Console.WriteLine("++++++++Shrank from " + tbsNum + " to " + n + "  and here is the best one...");
-                DumpSorted(1);
+                DumpSorted(1);  // very little difference between any, no need to show "n"
                 cSC.stlookup.ShowBufferStats();
             }
             cSC.ThisBoardSeries.Clear();
@@ -614,7 +615,7 @@ namespace spider
             int nBiggerFilter = 0;
             int tCount = 0;
             int ScoreFloor = 0;
-            int ColValToUse = 500;  // but not on last deal
+            int ColValToUse = GlobalClass.COL_WEIGHT;  // but not on last deal
             
             ActNumScoresUsed = 0;
 
@@ -640,7 +641,7 @@ namespace spider
             
             if (cbs.NumCompletedSuits > 0)
             {
-                ScoreFloor = 3000 * cbs.NumCompletedSuits;
+                ScoreFloor = GlobalClass.SUIT_WEIGHT * cbs.NumCompletedSuits;
                 for (i = 0; i < n; i++)
                 {
                     if (cSC.SortedScores[i].score > ScoreFloor)
@@ -908,11 +909,12 @@ namespace spider
                 bCanSpinMore = SpinOff(ref tb);
                 if (GlobalClass.bFoundFirstColunn)
                 {
+                    string strName = cSC.FormName(tb.DealCounter,eSavedType.eFIRST);
                     GlobalClass.bFoundFirstColunn = false;
                     cSC.cBD.SetCS(ref GlobalClass.FirstEmptyColumn);
                     cXmlFromBoard xtest = new cXmlFromBoard();
-                    xtest.ReCreateBinFile(ref GlobalClass.FirstEmptyColumn, ref cSC, "FIRST");
-                    cSC.Deck.SaveFirstBoardMoves(ref GlobalClass.FirstEmptyColumn);
+                    xtest.ReCreateBinFile(ref GlobalClass.FirstEmptyColumn, ref cSC,strName);
+                    cSC.Deck.SaveBoardMoves(ref GlobalClass.FirstEmptyColumn, strName);
                 }
                 OldBoard.nchild = cSC.ThisBoardSeries.Count - LastCount;
                 BoardBeingWorked++;

@@ -6,6 +6,24 @@ using System.Threading.Tasks;
 
 namespace spider
 {
+
+    public enum eSavedType
+    {
+        eDEAL,
+        eSEED,
+        eFIRST,
+        eSUIT,
+        eMERGE
+    }
+
+   public class cSavedBin
+    {
+        public int Ordinal; // 0..99 files can be created from each deal
+        public int iDeal;   // 0..5 where 0 is the original deck
+        public eSavedType eSB;
+        public string strLead;  // filename prefix excluding path and extension
+    }
+
     public class cSpinControl
     {
         public DateTime TimeProgramStarted = DateTime.Now;
@@ -50,9 +68,37 @@ namespace spider
         public string XML_Diag_filename;    // XML that can create a game
         public string BIN_Diag_filename;    // output saved game file created from xml
         public List<cEventClass> EventList = new List<cEventClass>();
+        public static int[] BinDealCount = new int[6] { 0, 0, 0, 0, 0, 0 };
         public cMergeXmlFile cMXF;
         public byte[] PngArray;
         public byte[] Hdr = new byte[0x2028];
+        public string FormName(int iDeal, eSavedType e)
+        {
+            int nfile = BinDealCount[iDeal];
+            string strLead = "";
+            switch (e)
+            {
+                case eSavedType.eFIRST:
+                    strLead = "a" + iDeal.ToString() + "FirstEmptyColumn";
+                    break;
+                case eSavedType.eDEAL:
+                    strLead = "Deal" + iDeal.ToString() + "_" + nfile.ToString();
+                    BinDealCount[iDeal]++;
+                    break;
+                case eSavedType.eSEED:
+                    strLead = "Deal" + iDeal.ToString() + "_" + nfile.ToString() + "_" + "Seed" ;
+                    BinDealCount[iDeal]++;
+                    break;
+                case eSavedType.eSUIT:
+                    strLead = "Deal" + iDeal.ToString() + "_" + nfile.ToString() + "_" + "Suit" ;
+                    BinDealCount[iDeal]++;
+                    break;
+                case eSavedType.eMERGE:
+                    return "";
+                    break;
+            }
+            return strLead;
+        }
     }
 
 }

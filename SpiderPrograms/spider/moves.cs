@@ -159,7 +159,7 @@ namespace spider
                     TheseMoves[TheseMoves.Count - 1].WhereInfo = ThisMoveInfo.Count;
                 }
             }
-            if (ThisMoveInfo.Count > 0)
+            if (ThisMoveInfo.Count > 0) // THIS CODE IS FOR DEBUGGING (BREAKPOINTS)
             {
                 int iCnt = ThisMoveInfo.Count - 1;
                 if (ThisMoveInfo[iCnt].id == GlobalClass.DEALT_A_CARD && thisMI.id == GlobalClass.DEALT_A_CARD)
@@ -247,18 +247,19 @@ namespace spider
 
         public void TraceBoard()
         {
-            TraceBoard(null);
+            Console.WriteLine( TraceBoard(null));
         }
 
         //  this displays the board in a console (null) or writes to a file (sw not null)
-        public void TraceBoard(StreamWriter sw)
+        public string TraceBoard(StreamWriter sw)
         {
             int i, j, k, e, r, NumMoves = TheseMoves.Count;
             int MaxRows = TheseMoves.Count + 10;    // leave room for info such as "Deal" after the move statements
             int padSize = 19;   // can use 13 if we abbreviate diamonds to diamon
             char[] charsToTrim = { ' ' };
-            int nInfo;
+            int nInfo=0;
             string strMove;
+            string strAccumulate = "";
             string[,] page = new string[6, MaxRows];
             int[] lCnt = new int[6];
             string[] strMoveInfo = null;
@@ -282,7 +283,7 @@ namespace spider
                 string strTemp = "";
                 if (nInfo == 3)
                     strTemp = strMoveInfo[0];
-                strMove = utils.CVTMoveValueToText(cMD, strTemp);                
+                strMove = utils.CVTMoveValueToText(cMD, strTemp);
                 page[e, r] = utils.Rpadto(strMove, padSize);
                 lCnt[e]++;
                 r++;
@@ -302,6 +303,7 @@ namespace spider
                     }
                 }
             }
+
             k = 0;
             for (i = 0; i < 6; i++)
             {
@@ -316,12 +318,14 @@ namespace spider
                     strMove += page[j, i];
                 strMove = strMove.TrimEnd(charsToTrim);
                 if (sw == null)
-                    Console.WriteLine(strMove);
+                    strAccumulate += strMove + "\r\n";
                 else
                 {
                     sw.WriteLine(strMove);
                 }
             }
+            if (sw == null) return strAccumulate;
+            return "";
         }
 
         /*

@@ -28,45 +28,30 @@ namespace spider
 {
     public class cXmlFromBoard
     {
-        /*
-         * if "" then we just save the binary file as it was called by makexml
-         * if "DEAL_" then a got to write out DEAL_x and DEAL_x_y 
-         * if "SUIT_" then same as "" but add suit info to SUIT_
-         * tb.DealCounter is the actual deals which are only 1..5 or so
-         * cSC.LocalDealCounter is the variation on the deal 0..511
-         * format of output might be DEAL_2_3  for the 3rd variation of the 2nd deal
-         * 
-         * */
+
         private StringBuilder sbXML;
+
         public void ReCreateBinFile(ref board tb, ref cSpinControl cSC, string strPrefix)
         {
             long nLen1, nLen = 1048576;
             int i, j, n;
-            int DealID = cSC.LocalDealCounter;
-            string strFullpathname;
-            string strName, DealName = strPrefix;
+            int DealID = cSC.LocalDealCounter;  // this is the deals that are done to the "working deal" which is the board deal counter.
+            string strFullpathname = "";
+            if(strPrefix == "") strFullpathname = GlobalClass.strSpiderOutputBinary;
+            else strFullpathname = GlobalClass.strSpiderDir + strPrefix + ".SpiderSolitaireSave-ms";
+
 
             //FileStream inStream = File.OpenRead(strFullpathname + ".hdr");
             //BinaryReader br = new BinaryReader(inStream);
             //nLen = inStream.Length;
             //Debug.Assert(nLen == 0x2028);
 
-            if (strPrefix != "")
+   
+
+            if (File.Exists(strFullpathname))
             {
-                if(strPrefix == "FIRST")
-                {
-                    strFullpathname = GlobalClass.strSpiderDir + "FirstEmptyColumn" + (1 + tb.DealCounter).ToString() + GlobalClass.strSpiderExt;
-                }
-                else
-                {
-                    DealName += (1 + tb.DealCounter).ToString() + "_";
-                    if (DealID > 0) DealName += DealID.ToString() + "_";
-                    strName = DealName + Path.GetFileName(GlobalClass.strSpiderOutputBinary);
-                    strFullpathname = GlobalClass.strSpiderDir + strName;
-                }
-                
+                Debug.Assert(false);
             }
-            else strFullpathname =GlobalClass.strSpiderOutputBinary;
 
             FileStream outStream = File.Create(strFullpathname);
             BinaryWriter bw = new BinaryWriter(outStream);

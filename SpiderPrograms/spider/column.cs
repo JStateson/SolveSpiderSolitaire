@@ -572,7 +572,7 @@ namespace spider
             if (n == 0)
             {
                 if (bLastDeal) value = 0;
-                else value = 500;
+                else value = GlobalClass.COL_WEIGHT;
                 return value;
             }
 

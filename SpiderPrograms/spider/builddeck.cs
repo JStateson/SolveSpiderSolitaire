@@ -109,6 +109,8 @@ namespace spider
         public string strCreatedXML;
         public string strUnix;
         public string strXMLout;
+        public string strGatheredMoves;
+        string strGatheredName;
         public class cEventStats
         {
             public int score;
@@ -359,7 +361,7 @@ namespace spider
             board ThisNewBoard = new board();
             FillDeck(ref ThisNewBoard, cSC.XML_Diag_filename);
             cSC.LocalDealCounter = 0; // probably 0 already
-            SaveBoardAsBin(ref ThisNewBoard, "");
+            SaveBoardAsBin(ref ThisNewBoard, eSavedType.eMERGE);
         }
 
         public void GetBoardFromSpiderSave(ref board InitialBoard)
@@ -1003,7 +1005,7 @@ namespace spider
 
 
 
-            GameState.Score = (500 - tb.MyMoves.TheseMoves.Count).ToString();        // j.ToString();
+            GameState.Score = (GlobalClass.COL_WEIGHT - tb.MyMoves.TheseMoves.Count).ToString();        // j.ToString();
 
             // note true because we are makeing moves Debug.Assert(GameState.Moves == tb.MyMoves.TheseMoves.Count.ToString());
             GameState.Moves = tb.MyMoves.TheseMoves.Count.ToString();   // i.ToString();
@@ -1071,7 +1073,7 @@ namespace spider
             FileStream outStream = File.Create(cSC.XML_Diag_filename);
             StreamWriter sw = new StreamWriter(outStream);
             //SaveBoardAsXML(ref tb, sw);
-            SerializeMoveEvents(ref tb, sw);
+            //SerializeMoveEvents(ref tb, sw);
             tb.MyMoves.TraceBoard(sw);
             tb.ShowRawBoard(sw,false,0);
             sw.Close();
@@ -1082,33 +1084,53 @@ namespace spider
             string strLocation = System.IO.Path.GetDirectoryName(cSC.XML_Diag_filename);
             FileStream outStream = File.Create(strLocation + "\\adeck.txt");
             StreamWriter sw = new StreamWriter(outStream);
-            SerializeMoveEvents(ref tb, sw);
+            //SerializeMoveEvents(ref tb, sw);
             tb.MyMoves.TraceBoard(sw);
             tb.ShowRawBoard(sw, false,1);
             sw.Close();
+#if DEBUG
+            outStream = File.Create(strLocation + "\\adeck2.txt");  // CARD IDs
+            sw = new StreamWriter(outStream);
+            tb.ShowRawBoard(sw, true, 1);
+            sw.Close();
+#endif
         }
 
 
 
 
         // this is called from the deal handler to save each deal
-        public void SaveBoardAtDeal(ref board tb, int iLocalDeal)   // iLocalDeal is 0 on bestboard else is deal#
+        public void SaveBoardAtDeal(GlobalClass.eSBAD eMove, ref board tb, int iLocalDeal)   // iLocalDeal is 0 on bestboard else is deal#
         {
-            string strDC = (tb.DealCounter + 1).ToString();
-            FileStream outStream = File.Create(GlobalClass.strSpiderName + strDC + "_mov.txt");
-            if(iLocalDeal>0)tb.DealString += strDC + "_" + iLocalDeal.ToString() + ",";
-            StreamWriter sw = new StreamWriter(outStream);
-            //SaveBoardAsXML(ref tb, sw);
-            SerializeMoveEvents(ref tb, sw);
-            tb.MyMoves.TraceBoard(sw);
-            tb.ShowRawBoard(sw,false,0);
-// the above generated an error by looking for a card that had not been moved to its destination
-// 20nov2012 so I added the following 2 lines of code
-//            tb.ReScoreBoard();
-//            tb.ShowRawBoard(sw, false);
-            TraceAllMoves(ref tb, sw);
-            sw.Close();
-            SaveBoardAsBin(ref tb);
+            string strDC; ;
+            string strMovID;
+            string strName = "";
+            StreamWriter sw;
+            FileStream outStream;
+            if (eMove == GlobalClass.eSBAD.eStartGather)
+            {
+                strName = SaveBoardAsBin(ref tb, eSavedType.eSEED);
+                strDC = tb.DealCounter.ToString();
+                strGatheredMoves = "=====" + strName + "=====\r\n";
+                strGatheredMoves += tb.MyMoves.TraceBoard(null);
+                strGatheredMoves += tb.AssembleRawBoard(null, false, 0);
+                tb.DealString += strName + ",";
+                strGatheredName = strName;
+                return;
+            }
+            strName = SaveBoardAsBin(ref tb, eSavedType.eDEAL); 
+            tb.DealString += strName + ",";
+            strGatheredMoves += "\r\n===== " + strName + " =====\r\n";
+            strGatheredMoves += tb.MyMoves.TraceBoard(null);
+            if (eMove == GlobalClass.eSBAD.eAllGathered)
+            {
+                outStream = File.Create(GlobalClass.strSpiderDir + strGatheredName + "_mov.txt");
+                sw = new StreamWriter(outStream);
+                // tb.ShowRawBoard(sw, false, 0); 2018 cannot do this here, needs to be at best board"
+                sw.WriteLine(strGatheredMoves);
+                sw.Close();
+            }
+
         }
 
 
@@ -1123,25 +1145,23 @@ namespace spider
             TraceAllMoves(ref cSC.BestBoard, null);
         }
 
-        public void SaveFirstBoardMoves(ref board tb)
-        { 
-            string strFullpathname = GlobalClass.strSpiderDir + "FirstEmptyColumn" + (1 + tb.DealCounter).ToString() + "_mov.txt";
+        public void SaveBoardMoves(ref board tb, string strName)
+        {
+            string strFullpathname = GlobalClass.strSpiderDir + strName + "_mov.txt";
             FileStream outStream = File.Create(strFullpathname);
-            //if (iLocalDeal > 0) tb.DealString += strDC + "_" + iLocalDeal.ToString() + ",";
             StreamWriter sw = new StreamWriter(outStream);
-            SerializeMoveEvents(ref tb, sw);
+            //SerializeMoveEvents(ref tb, sw);
             tb.MyMoves.TraceBoard(sw);
             tb.ShowRawBoard(sw, false, 0);
-            //TraceAllMoves(ref tb, sw); // no need to show all other possiblities, just this board.
             sw.Close();
         }
 
-        // 14nov2012 this does not seem to work if there is more then one suit completed????
-        // wait wait!!! c is not even used!!!
+        //used only for testing
         public void SerializeMoveEvents(ref board nb, StreamWriter sw)
         {
             int i, n = nb.MyMoves.TheseMoves.Count;
             int LocalDealCounter = 0;
+
             AllEvents = new List<cEventClass>();
             AllEvents.Clear();
             cMoveInfo cMI;
@@ -1381,7 +1401,12 @@ namespace spider
             board osb = new board(ref OriginalSavedBoard);
             cMoveInfo cMI;
             int OldScore = 0;
+            bool bIsDeal = false;
+            if(tb.UniqueID == -1)
+            {
 
+                tb.ShowBoard();
+            }
             for (i = 0; i < n; i++)
             {
                 cMoveData cMD = tb.MyMoves.TheseMoves[i];
@@ -1396,6 +1421,11 @@ namespace spider
                     if (osb.score > OldScore)
                         OldScore = osb.score;
                 }
+                bIsDeal = cMD.ShrinkCode.Contains("D-");
+                if(bIsDeal)
+                {
+                    int iGot = 1;
+                }
                 if (cMD.Des == -1 && cMD.Src == -1)
                 {
                     osb.deal(OldScore, DateTime.Now);
@@ -1404,6 +1434,9 @@ namespace spider
                     osb.ShowRawBoard(sw, false,0);
                     OldScore = osb.score;
                 }
+
+                // if WhereInfo is > 0 then more than one event happened.  Usually a deal has no move so an immediate deal but
+                // conceivable a suit could be formed by the deal.  this has happened but it is more likely the deal has no moves.
                 if (cMD.WhereInfo >= 0)
                 {
                     cMI = tb.MyMoves.ThisMoveInfo[cMD.WhereInfo];
@@ -1415,13 +1448,13 @@ namespace spider
 
                         // 11nov2012 if two deals in a row then it seems that WhereInfo is > 0
                         // and we must deal here twice????
-                       // for (int j = 0; j < cMD.WhereInfo; j++)
+                        // for (int j = 0; j < cMD.WhereInfo; j++)
                         //{
-                            osb.deal(OldScore, DateTime.Now);
-                            osb.ReScoreBoard();
-                            osb.MyMoves.TraceBoard(sw);
-                            osb.ShowRawBoard(sw,false,0);
-                            OldScore = osb.score;
+                        osb.deal(OldScore, DateTime.Now);
+                        osb.ReScoreBoard();
+                        osb.MyMoves.TraceBoard(sw);
+                        osb.ShowRawBoard(sw, false, 0);
+                        OldScore = osb.score;
                         //}
                     }
                     if (cMI.id == GlobalClass.BUILT_SUIT)
@@ -1429,21 +1462,19 @@ namespace spider
 
                     }
                 }
+
             }
         }
 
-        public void SaveBoardAsBin(ref board tb)
-        {
-            SetCS(ref tb);
-            cXmlFromBoard xtest = new cXmlFromBoard();
-            xtest.ReCreateBinFile(ref tb, ref cSC,"DEAL");
-        }
 
-        public void SaveBoardAsBin(ref board tb, string strPrefix)
+
+        public string SaveBoardAsBin(ref board tb, eSavedType eST)
         {
+            string strName = cSC.FormName(tb.DealCounter, eST);
             SetCS(ref tb);
             cXmlFromBoard xtest = new cXmlFromBoard();
-            xtest.ReCreateBinFile(ref tb, ref cSC,strPrefix);
+            xtest.ReCreateBinFile(ref tb, ref cSC, strName);
+            return strName;
         }
 
         //create the event list structure from the xml
