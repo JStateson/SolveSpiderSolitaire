@@ -38,11 +38,11 @@ namespace spider
             //File.Delete(strDir);
             FileStream outStream = File.Create(strDir + "\\aRemoveFiles.bat");
             StreamWriter sw = new StreamWriter(outStream);
-            strOut += "del adeck*.txt\n";
-            strOut += "del DEAL?_*.SpiderSolitaireSave-ms\n";
-            strOut += "del deal?_*mov.txt\n";
-            strOut += "del a?FirstEmptyColumn*.*\n";
-            strOut += "del Spider*.xml\n";
+            strOut += "del adeck*.txt\r\n";
+            strOut += "del DEAL?_*.SpiderSolitaireSave-ms\r\n";
+            strOut += "del deal?_*mov.txt\r\n";
+            strOut += "del a?FirstEmptyColumn*.*\r\n";
+            strOut += "del Spider*.xml\r\n";
             sw.WriteLine(strOut);
             Console.WriteLine("working in directory: " + strDir + "\n");
             sw.Close();
