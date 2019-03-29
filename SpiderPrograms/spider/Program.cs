@@ -36,9 +36,9 @@ namespace spider
 
             string strOut = "";
             //File.Delete(strDir);
-            FileStream outStream = File.Create(strDir + "\\aRemoveFiles.bat");
+            FileStream outStream = File.Create(strDir + "\\0RemoveFiles.bat");
             StreamWriter sw = new StreamWriter(outStream);
-            strOut += "del adeck*.txt\r\n";
+            strOut += "del 0deck*.txt\r\n";
             strOut += "del DEAL?_*.SpiderSolitaireSave-ms\r\n";
             strOut += "del deal?_*mov.txt\r\n";
             strOut += "del a?FirstEmptyColumn*.*\r\n";

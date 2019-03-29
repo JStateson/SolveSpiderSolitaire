@@ -224,5 +224,9 @@ namespace spider
             return path;
         }
     }
+    public class cBoardIDs
+    {
+        
+    }
 
 }

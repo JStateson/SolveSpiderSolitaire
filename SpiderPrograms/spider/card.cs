@@ -137,6 +137,11 @@ namespace spider
             return "                ".Substring(0, i) + strCardName;
         }
 
+        public string GetResourceID()
+        {
+            string strCardName = GetRankChar().Trim() + GetSuitChar();
+            return "R_" + strCardName.ToLower();
+        }
 
         public string GetFormattedID(int PadTo)
         {

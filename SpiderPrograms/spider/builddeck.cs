@@ -1082,14 +1082,14 @@ namespace spider
         public void SaveDeck(ref board tb)
         {
             string strLocation = System.IO.Path.GetDirectoryName(cSC.XML_Diag_filename);
-            FileStream outStream = File.Create(strLocation + "\\adeck.txt");
+            FileStream outStream = File.Create(strLocation + "\\0deck.txt");
             StreamWriter sw = new StreamWriter(outStream);
             //SerializeMoveEvents(ref tb, sw);
             tb.MyMoves.TraceBoard(sw);
             tb.ShowRawBoard(sw, false,1);
             sw.Close();
 #if DEBUG
-            outStream = File.Create(strLocation + "\\adeck2.txt");  // CARD IDs
+            outStream = File.Create(strLocation + "\\0deck2.txt");  // CARD IDs
             sw = new StreamWriter(outStream);
             tb.ShowRawBoard(sw, true, 1);
             sw.Close();

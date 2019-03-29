@@ -1074,6 +1074,7 @@ namespace spider
             if (sw == null) Console.WriteLine(strOut);
         }
 
+
         // Show11 shows column 11 but only for "adeck" 
         public  string  AssembleRawBoard(StreamWriter sw, bool bShowID, int Show11)
         {

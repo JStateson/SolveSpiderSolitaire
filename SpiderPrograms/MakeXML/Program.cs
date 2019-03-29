@@ -8,13 +8,13 @@ using System.Diagnostics;
 /*
  * The purpose of this program is to make either XML or Spider "saved games" using an arbitary or made up deck
  * program can have 0, 1 or 3 arguments
- * 0 args: find and convert a saved file into an xml image
- * 1 arg:  saved file is supplied as first arguement to program
- *    output of 0 or 1 is same filename with extension of .xml
+ * 0 args: write out possible commands (help)
+ * 1 arg:  read arg as save file write out xml file.
+ *    output is same filename with extension of .xml
  * rest are not coded yet but will be
  * if 3 args the first is input saved file and second is input XML we want to use
  * 1: game saved file for use as a templete
- * 2: xml file we want to put into the templete
+ * 2: xml file we want to put into the templete (basename must be different from 1)
  * 3: game filename that will have the xml file from (2) that was put into (1)
  * */
 
@@ -24,6 +24,11 @@ namespace spider
     {
         static int XMLtoRead = -1;
 
+        static void GiveHelp()
+        {
+            Console.WriteLine("makexml any.save - creates any.xml\r\n");
+            Console.WriteLine("makexml any.save old.xml old.save - creates old.save\r\n");
+        }
 
         static void Main(string[] args)
         {
@@ -31,7 +36,7 @@ namespace spider
             string stExt = ".SpiderSolitaireSave-ms";
             string stTemp, strSpiderBin0;
             string PathToDirectory;
-            string stSrc, stDef = "Spider Solitaire.SpiderSolitaireSave-ms";
+            string stSrc="", stDef = "Spider Solitaire.SpiderSolitaireSave-ms";
             cSpinControl cSC;
             board InitialBoard;
             stTemp = System.Reflection.Assembly.GetEntryAssembly().Location; // path to executable
@@ -39,7 +44,11 @@ namespace spider
             {
                 stSrc = "\\" + args[0];
             }
-            else stSrc = "\\" + stDef;
+            else //stSrc = "\\" + stDef;  - not searching for save file anymore
+            {
+                GiveHelp();
+                Environment.Exit(0);
+            }
             strSpiderBin0 = System.IO.Path.GetDirectoryName(stTemp) + stSrc;
             bIsThere = File.Exists(strSpiderBin0);
             if (bIsThere)
