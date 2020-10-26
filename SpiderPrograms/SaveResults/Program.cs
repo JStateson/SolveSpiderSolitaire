@@ -212,7 +212,6 @@ namespace SaveResults
                     Environment.Exit(0);
                 }
             }
-            ClearDir(PathToDirectory);
             strSuffix = "";
             if (strReply.Substring(0, 1).ToLower() == "l")
             {
@@ -228,6 +227,7 @@ namespace SaveResults
                     Environment.Exit(0);
                 }
             }
+            ClearDir(PathToDirectory); 
             stTemp += strSuffix;
             Directory.CreateDirectory(stTemp);
             foreach (string sFile in Directory.GetFiles(PathToDirectory, "*.SpiderSolitaireSave-ms"))
