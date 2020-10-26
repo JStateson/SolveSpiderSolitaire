@@ -16,6 +16,9 @@ using System.Diagnostics;
  * 1: game saved file for use as a templete
  * 2: xml file we want to put into the templete (basename must be different from 1)
  * 3: game filename that will have the xml file from (2) that was put into (1)
+ * NOTE TO MYSELF, ANY OF THE MD HASHS (MD2,4 OR 5) CAN ENCODE A DECK OF 52 CARDS
+ * 10/22/2020 WRITING OUT A CHECK TYPE VALUE TO SEE IF DUPLICATE FILES EXIST
+ * TOP ROW OF CARDS TO BE CONVERTED TO 10 DIGIT HEX VALUE 0..E FOR ACE THROUGH KING WITH 0 FOR EMPTY COLUMN (PROBLEM IF EMPTY!)
  * */
 
 namespace spider

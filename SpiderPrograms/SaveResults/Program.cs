@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 // program saves all results indirectory in "2018" or "2018\fails"
 // all standard seed and deal files are deleted as if "removefiles" was executed.
@@ -214,7 +215,16 @@ namespace SaveResults
             ClearDir(PathToDirectory);
             strSuffix = "";
             if (strReply.Substring(0, 1).ToLower() == "l")
+            {
                 strSuffix = "-L";
+            }
+            else
+            {
+                // no other commands other than L
+                Console.WriteLine("Invalid command, try again\n");
+                Console.ReadLine();
+                Environment.Exit(0);
+            }
             stTemp += strSuffix;
             Directory.CreateDirectory(stTemp);
             foreach (string sFile in Directory.GetFiles(PathToDirectory, "*.SpiderSolitaireSave-ms"))
@@ -228,6 +238,8 @@ namespace SaveResults
                 dFile = stTemp + "\\notes.txt";
                 System.IO.File.WriteAllText(dFile,strReply);
             }
+            // need to create a new spider game
+            // no simple way since program could be anywhere
         }
     }
 }

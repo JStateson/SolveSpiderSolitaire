@@ -368,10 +368,24 @@ namespace spider
         {
             if (!cSC.bJustReadXML)
             {   // normal execution path:  take a saved game and extract the xml for parsing
+                // 10/22/2020 compute check value to help in test for duplicates
+                UInt64 lChk = 0;
                 CreateXml();
                 //Debug.Assert(cSC.XML_Diag_filename == strSPloc + ".xml");  // not true anymore as we are allowing any name for the saved game
                 FillDeck(ref InitialBoard, cSC.XML_Diag_filename);
                 OriginalSavedBoard = new board(ref InitialBoard);
+                for(int i = 0; i < 10; i++)
+                {
+                    UInt64 j = 0;
+                    if (OriginalSavedBoard.ThisColumn[i].Cards.Count > 0)
+                        j = (UInt64) OriginalSavedBoard.ThisColumn[i].Cards[0].rank;
+                    //Console.WriteLine(i.ToString() + " " + j.ToString("x"));
+                    lChk = lChk << 4;
+                    lChk |= j;
+                }
+                //Console.WriteLine("Check value:{0:X10} File:{1}", lChk, cSC.XML_Diag_filename);
+                Console.WriteLine(lChk.ToString("X10") + " file:" + cSC.XML_Diag_filename);
+
                 cSC.GameSeed = Convert.ToInt32(GameState.GameSeed.ToString());
                 SaveDeck(ref OriginalSavedBoard);
                 return;
