@@ -220,10 +220,13 @@ namespace SaveResults
             }
             else
             {
-                // no other commands other than L
-                Console.WriteLine("Invalid command, try again\n");
-                Console.ReadLine();
-                Environment.Exit(0);
+                // no other commands other than L or W
+                if(strReply.Substring(0, 1).ToLower() != "w")
+                {
+                    Console.WriteLine("Invalid command, try again\n");
+                    Console.ReadLine();
+                    Environment.Exit(0);
+                }
             }
             stTemp += strSuffix;
             Directory.CreateDirectory(stTemp);
