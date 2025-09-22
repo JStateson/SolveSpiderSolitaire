@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 // copyright 2009..2018 Joseph "Beemer Biker" Stateson   All Rights Reserved   
 
@@ -79,14 +80,13 @@ namespace spider
             // if argument is supplied and extension is a saved game, then use that
             GlobalClass.bLookForFirstColumn = true;
             GlobalClass.bFoundFirstColunn = false;
-            Console.WriteLine("Spider(v) 1.0; 5-20-2018; Copyright Joseph Stateson:  josephy@stateson.net\n");
-
+            Console.WriteLine("Spider(v) 1.1; 9-22-2025; Copyright Joseph Stateson:  josephy@stateson.net\n");
             if (args.Count() > 0)
             {
                 if(args[0].Contains(".SpiderSolitaireSave-ms"))
                 {
-                    string path = Directory.GetCurrentDirectory();
-                    strSpiderBin0 = path + "\\" +args[0];
+                    string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    strSpiderBin0 = Path.Combine(exePath,args[0]);
                     bIsThere = File.Exists(strSpiderBin0);
                     Debug.Assert(bIsThere);
                     GlobalClass.strSpiderBin = strSpiderBin0;
@@ -94,19 +94,19 @@ namespace spider
             }
             else
             {
-                // look for file in current director and use that one
-                strSpiderBin0 = System.IO.Path.GetDirectoryName(stTemp) + "\\Spider Solitaire.SpiderSolitaireSave-ms";
+                // look for file where it usually is!!!
+                string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                strSpiderBin0 = Path.Combine(userFolder, "Saved Games", "Microsoft Games", "Spider Solitaire", "Spider Solitaire.SpiderSolitaireSave-ms");
                 bIsThere = File.Exists(strSpiderBin0);
-
             }
             if (!bIsThere)
             {
-
                 //Attempt to find where the saved spider file is located.  Normally at c:\user\username but the windows MOVE property might
                 //have been used to relocat the file.  In addition,  OneDrive may or may not be in the path returned by SpecialFolder
+                //latest spider areo install seems onedrive is not used.  
 
                 strSpiderBin0 = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                // the above is usually user\stateson\documents
+
                 GlobalClass.strSpiderBin = strSpiderBin0.Replace("Documents", "Saved Games\\Microsoft Games\\Spider Solitaire\\Spider Solitaire.SpiderSolitaireSave-ms");
                 bIsThere = File.Exists(GlobalClass.strSpiderBin);
                 if (!bIsThere)
